@@ -1,0 +1,29 @@
+<html>
+<head>
+    <title>Format Code</title>
+</head>
+<body>
+    <h1>Format Code</h1>
+    <p> Change </br>"summon game:build 2232.25 84.38 44.43 ~ ~ event7" </br> to </br>"execute as @a[x=2232,y=84,z=44,r=10] at @s run summon game:build 2232.25 84.38 44.43 ~ ~ event7" </p>
+    <textarea id="input" rows="10" cols="50"></textarea><br>
+    <button onclick="formatCode()">Format Code</button>
+    <h2>Formatted Code:</h2>
+    <textarea id="output" rows="10" cols="50" readonly></textarea>
+
+    <script>
+        function formatCode() {
+            var input = document.getElementById('input').value;
+            var lines = input.split('\n');
+            var output = '';
+            for (var i = 0; i < lines.length; i++) {
+                var line = lines[i];
+                var coords = line.match(/(\d+\.\d+|\d+)/g);
+                if (coords) {
+                    output += 'execute as @a[x=' + Math.round(coords[0]) + ',y=' + Math.round(coords[1]) + ',z=' + Math.round(coords[2]) + ',r=10] at @s run ' + line + '\\n';
+                }
+            }
+            document.getElementById('output').value = output;
+        }
+    </script>
+</body>
+</html>
