@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Minecraft NPC Script Generator</title>
+</head>
+<body>
+
+<h1>Minecraft NPC Script Generator</h1>
+
+<form>
+    <label for="npcName">NPC Name:</label>
+    <input type="text" id="npcName" placeholder="Enter NPC name..."><br><br>
+
+    <label for="scriptInput">Script:</label><br>
+    <textarea id="scriptInput" rows="10" cols="50" placeholder="Enter the dialogue, line by line..."></textarea><br><br>
+
+    <label for="onOpenCommand">On Open Command:</label>
+    <input type="text" id="onOpenCommand" placeholder="Enter on open command..."><br><br>
+
+    <label for="onCloseCommand">On Close Command:</label>
+    <input type="text" id="onCloseCommand" placeholder="Enter on close command..."><br><br>
+
+    <label for="buttonName">Button Name:</label>
+    <input type="text" id="buttonName" placeholder="Enter button name..."><br><br>
+
+    <label for="buttonCommand">Button Command:</label>
+    <input type="text" id="buttonCommand" placeholder="Enter button command..."><br><br>
+
+    <input type="button" value="Generate Files" onclick="processScript()">
+</form>
+
+<h2>.lang File Output:</h2>
+<textarea id="langOutput" rows="10" cols="70"></textarea>
+
+<h2>Dialogue File Output:</h2>
+<textarea id="dialogueOutput" rows="10" cols="70"></textarea>
+
+<script>
+    function processForMinecraftLang(npcName, script) {
+    let scriptLines = script.split("\n");
+    let formattedScript = [];
+    let rawtextArr = [];
+    let counter = 1;
+
+    for (let line of scriptLines) {
+        if (line.trim() === "") {
+            line = "§r";
+        }
+        formattedScript.push(`${npcName}.npc.dialogue.${counter}=${line}`);
+        rawtextArr.push(`{"translate":"${npcName}.npc.dialogue.${counter}"}`, `{"text":"\\n"}`);
+        counter++;
+    }
+
+    rawtextArr.pop();
+
+    return {
+        lang: `## {"rawtext":[${rawtextArr.join(",")}]} \n\n ## {"rawtext":[{"translate":"${npcName}.npc"}]}\n` + formattedScript.join("\n") + `\n${npcName}.npc=${npcName}`,
+        rawtext: `{"rawtext":[${rawtextArr.join(",")}]}` 
+    };
+}
+
+function processScript() {
+    let npcName = document.getElementById("npcName").value.trim();
+    let script = document.getElementById("scriptInput").value;
+    let onOpenCommand = document.getElementById("onOpenCommand").value.trim();
+    let onCloseCommand = document.getElementById("onCloseCommand").value.trim();
+    let buttonName = document.getElementById("buttonName").value.trim();
+    let buttonCommand = document.getElementById("buttonCommand").value.trim();
+
+    let minecraftLangData = processForMinecraftLang(npcName, script);
+
+    let sceneData = {
+        "scene_tag": `${npcName}_intro`,
+        "npc_name": {
+            "rawtext": [{"translate": `${npcName}.npc`}]
+        },
+        "text": JSON.parse(minecraftLangData.rawtext),
+    };
+
+    if (onOpenCommand) {
+        sceneData["on_open_commands"] = [onOpenCommand];
+    }
+
+    if (onCloseCommand) {
+        sceneData["on_close_commands"] = [onCloseCommand];
+    }
+
+    if (buttonName && buttonCommand) {
+        sceneData["buttons"] = [{
+            "name": buttonName,
+            "commands": [buttonCommand]
+        }];
+    }
+
+    let dialogueOutput = sceneData;
+
+    document.getElementById("langOutput").value = minecraftLangData.lang;
+    document.getElementById("dialogueOutput").value = JSON.stringify(dialogueOutput, null, 4);
+}
+
+
+</script>
+
+</body>
+</html>
